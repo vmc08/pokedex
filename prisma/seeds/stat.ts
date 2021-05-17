@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import prisma from '../client'
 import { IPage } from './types'
 
 type TStat = {
@@ -15,13 +16,22 @@ export default async () => {
 
   do {
     const currentOffset = offset * DEFAULT_LIMIT
-    const { data } = await axios.get<IPage<TStat>>(`https://pokeapi.co/api/v2/pokemon?offset=${currentOffset}&limit=${DEFAULT_LIMIT}`)
+    const { data } = await axios.get<IPage<TStat>>(`https://pokeapi.co/api/v2/stat?offset=${currentOffset}&limit=${DEFAULT_LIMIT}`)
     results = [
       ...results,
       ...data.results,
     ]
     console.log(`Fetched done: ${currentOffset} - ${currentOffset + DEFAULT_LIMIT}`)
-    if (data.next) offset ++
+    if (data.next) offset++
     else break;
   } while (offset)
+
+  results.forEach(async r => {
+    const stat = await prisma.stat.create({
+      data: {
+        name: r.name,
+      },
+    })
+    console.log(`Record created with id ${stat.id}`)
+  })
 }

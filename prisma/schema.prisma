@@ -32,7 +32,7 @@ model Ability {
 model Type {
   id         Int       @id @default(autoincrement())
   apiId      Int       @unique @map("api_id")
-  name       String    @unique
+  name       String
   strengths  Type[]    @relation("TypeToType")
   weaknesses Type[]    @relation("TypeToType")
   pokemons   Pokemon[]
@@ -43,7 +43,7 @@ model Type {
 model Pokemon {
   id         Int         @id @default(autoincrement())
   apiId      Int         @unique @map("api_id")
-  name       String      @unique
+  name       String
   height     Int
   weight     Int
   abilities  Ability[]

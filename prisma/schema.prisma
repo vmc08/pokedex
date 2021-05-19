@@ -12,34 +12,45 @@ generator client {
 
 model Stat {
   id        Int         @id @default(autoincrement())
+  apiId     Int         @map("api_id")
   name      String
   StatValue StatValue[]
+
+  @@map("stat")
 }
 
 model Ability {
   id       Int       @id @default(autoincrement())
-  name     String    @unique
-  effect   String    @db.VarBit(255)
+  apiId    Int       @map("api_id")
+  name     String
+  effect   String
   pokemons Pokemon[]
+
+  @@map("ability")
 }
 
 model Type {
   id         Int       @id @default(autoincrement())
+  apiId      Int       @map("api_id")
   name       String    @unique
   strengths  Type[]    @relation("TypeToType")
   weaknesses Type[]    @relation("TypeToType")
   pokemons   Pokemon[]
+
+  @@map("type")
 }
 
 model Pokemon {
-  id            Int         @id @default(autoincrement())
-  pokedexNumber Int         @map("pokedex_number")
-  name          String      @unique
-  height        Int
-  weight        Int
-  abilities     Ability[]
-  types         Type[]
-  statValues    StatValue[]
+  id         Int         @id @default(autoincrement())
+  apiId      Int         @map("api_id")
+  name       String      @unique
+  height     Int
+  weight     Int
+  abilities  Ability[]
+  types      Type[]
+  statValues StatValue[]
+
+  @@map("pokemon")
 }
 
 model StatValue {
@@ -47,6 +58,8 @@ model StatValue {
   value     Int
   stat      Stat    @relation(fields: [statId], references: [id])
   statId    Int
-  Pokemon   Pokemon @relation(fields: [pokemonId], references: [id])
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id])
   pokemonId Int
+
+  @@map("stat_value")
 }

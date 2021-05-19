@@ -4,3 +4,8 @@ export interface IPage<T> {
   previous: string | null
   results: T[]
 }
+
+export interface IGenericApiResult {
+  name: string;
+  url: string;
+}

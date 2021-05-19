@@ -2,6 +2,7 @@ import axios from 'axios'
 import { PrismaClient, Ability } from "@prisma/client"
 
 import { IPage, IGenericApiResult } from './type-definitions'
+import { getApiId } from '../utils/seederUtil'
 
 const prisma = new PrismaClient()
 const DEFAULT_LIMIT = 20
@@ -27,23 +28,19 @@ export default async () => {
     const currentOffset = offset * DEFAULT_LIMIT
     const { data } = await axios.get<IPage<IGenericApiResult>>(`https://pokeapi.co/api/v2/ability?offset=${currentOffset}&limit=${DEFAULT_LIMIT}`)
     const currentMaxRange = (currentOffset + DEFAULT_LIMIT) > data.count ? data.count : (currentOffset + DEFAULT_LIMIT)
-    let innerPromises: Promise<void>[] = []
-    data.results.forEach(r => {
-      const urlSegments = r.url.split("/")
-      const apiId = Number(urlSegments[urlSegments.length - 2])
-      innerPromises.push(
-        axios.get<IApiAbility>(r.url).then(ar => {
-          const shortEffect = ar.data.effect_entries.find(ee => ee.language.name === 'en')?.short_effect || ''
-          const flavorEntry = ar.data.flavor_text_entries.find(ee => ee.language.name === 'en')?.flavor_text || ''
-          results.push({
-            apiId,
-            name: r.name,
-            effect: shortEffect || flavorEntry,
-          })
-        })
-      )
-    })
-    await Promise.all(innerPromises)
+
+    for (const r of data.results) {
+      const ar = await axios.get<IApiAbility>(r.url)
+      const shortEffect = ar.data.effect_entries.find(ee => ee.language.name === 'en')?.short_effect || ''
+      const flavorEntry = ar.data.flavor_text_entries.find(ee => ee.language.name === 'en')?.flavor_text || ''
+      results.push({
+        apiId: getApiId(r.url),
+        name: r.name,
+        effect: shortEffect || flavorEntry,
+      })
+      console.log(`Fetching ability effect done: ${r.name}`)
+    }
+
     console.log(`Fetching abilities done: ${currentOffset} - ${currentMaxRange}`)
     if (data.next) offset++
     else break;

@@ -12,7 +12,7 @@ generator client {
 
 model Stat {
   id        Int         @id @default(autoincrement())
-  apiId     Int         @map("api_id")
+  apiId     Int         @unique @map("api_id")
   name      String
   StatValue StatValue[]
 
@@ -21,7 +21,7 @@ model Stat {
 
 model Ability {
   id       Int       @id @default(autoincrement())
-  apiId    Int       @map("api_id")
+  apiId    Int       @unique @map("api_id")
   name     String
   effect   String
   pokemons Pokemon[]
@@ -31,7 +31,7 @@ model Ability {
 
 model Type {
   id         Int       @id @default(autoincrement())
-  apiId      Int       @map("api_id")
+  apiId      Int       @unique @map("api_id")
   name       String    @unique
   strengths  Type[]    @relation("TypeToType")
   weaknesses Type[]    @relation("TypeToType")
@@ -42,7 +42,7 @@ model Type {
 
 model Pokemon {
   id         Int         @id @default(autoincrement())
-  apiId      Int         @map("api_id")
+  apiId      Int         @unique @map("api_id")
   name       String      @unique
   height     Int
   weight     Int

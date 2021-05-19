@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { PrismaClient, Type } from "@prisma/client"
 
-import { IPage, IGenericApiResult } from './type-definitions'
-import { getApiId } from '../utils/seederUtil'
+import { IPage, IGenericApiResult } from 'prisma/types'
+import { getApiId } from 'prisma/utils/seederUtil'
 
 const prisma = new PrismaClient()
 const DEFAULT_LIMIT = 20

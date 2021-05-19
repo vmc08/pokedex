@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { PrismaClient } from "@prisma/client"
 
-import { IPage, IGenericApiResult } from './type-definitions'
+import { IPage, IGenericApiResult } from 'prisma/types'
 
 const prisma = new PrismaClient()
 const DEFAULT_LIMIT = 20

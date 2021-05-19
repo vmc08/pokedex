@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 
-import stat from './seeds/stat'
+import stat from './seeders/stat'
 
 const prisma = new PrismaClient()
 
@@ -15,4 +15,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect()
+    process.exit()
   })

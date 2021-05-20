@@ -3,6 +3,7 @@ import { Button, IconButton, Stack } from "@chakra-ui/react"
 import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import { useForm, useFormState } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { signIn } from 'next-auth/client'
 
 import AppInput from 'src/components/form/AppInput'
 import loginSchema from '../validations/loginSchema'
@@ -14,14 +15,21 @@ export type TLoginFormValues = {
 
 const LoginForm = () => {
   const [showPw, setShowPw] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const { control, register, handleSubmit } = useForm<TLoginFormValues>({
     resolver: yupResolver(loginSchema),
   })
   const { errors } = useFormState({ control })
 
-  const onSubmitAction = (formData: TLoginFormValues) => {
-    console.log(formData)
+  const onSubmitAction = async (formData: TLoginFormValues) => {
+    setLoading(true)
+    const result = await signIn("credentials", {
+      ...formData,
+      redirect: false,
+    })
+    console.log(result)
+    setLoading(false)
   }
 
   return (
@@ -33,6 +41,7 @@ const LoginForm = () => {
           placeholder="Email"
           size="lg"
           leftIcon={<EmailIcon color="gray.300" />}
+          isReadOnly={loading}
           error={errors.email?.message}
           {...register("email")}
         />
@@ -50,10 +59,19 @@ const LoginForm = () => {
               onClick={() => setShowPw(prevState => !prevState)}
             />
           )}
+          isReadOnly={loading}
           error={errors.password?.message}
           {...register("password")}
         />
-        <Button colorScheme="blue" size="lg" type="submit">Login</Button>
+        <Button
+          isLoading={loading}
+          loadingText="Authenticating"
+          colorScheme="blue"
+          size="lg"
+          type="submit"
+        >
+          Login
+        </Button>
       </Stack>
     </form>
   )

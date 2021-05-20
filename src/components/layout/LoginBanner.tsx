@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Text, Button } from "@chakra-ui/react"
 
-import Banner from 'src/components/Banner'
+import Banner from '../Banner'
 
 export default function LoginBanner () {
   return (

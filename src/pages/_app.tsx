@@ -2,7 +2,7 @@ import { AppProps } from "next/app"
 import { ChakraProvider } from "@chakra-ui/react"
 import { NextComponentType, NextPageContext } from 'next'
 
-import LoginBanner from 'src/modules/layout/LoginBanner'
+import LoginBanner from 'src/components/layout/LoginBanner'
 import { TPageConfig } from 'src/types/page'
 import theme from 'theme'
 

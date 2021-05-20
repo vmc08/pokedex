@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, FC } from "react"
 import {
   InputGroup, InputLeftElement, InputRightElement, Input,
   Button, IconButton,
@@ -6,7 +6,9 @@ import {
 } from "@chakra-ui/react"
 import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 
-export default function LoginPage () {
+import { TPageConfig } from 'src/types/page'
+
+const LoginPage: FC & TPageConfig = () => {
   const [showPw, setShowPw] = useState(false)
 
   return (
@@ -41,3 +43,7 @@ export default function LoginPage () {
     </Container>
   )
 }
+
+LoginPage.showBanner = false
+
+export default LoginPage

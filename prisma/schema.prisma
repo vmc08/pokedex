@@ -46,6 +46,7 @@ model Pokemon {
   name       String
   height     Int
   weight     Int
+  image      String
   abilities  Ability[]
   types      Type[]
   statValues StatValue[]

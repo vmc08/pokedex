@@ -2,7 +2,7 @@ import axios from 'axios'
 import { PrismaClient, Type } from "@prisma/client"
 
 import { IPage, IGenericApiResult } from 'prisma/types'
-import { getApiId } from 'prisma/utils/seederUtil'
+import { getApiId } from '../utils/seederUtil'
 
 const prisma = new PrismaClient()
 const DEFAULT_LIMIT = 20
@@ -64,33 +64,19 @@ export default async () => {
   await Promise.all(promises)
 
   for (const r of results) {
-    const weaknesses = await prisma.type.findMany({
-      where: {
-        apiId: {
-          in: r.weaknesses,
-        },
-      },
-    })
-    const strengths = await prisma.type.findMany({
-      where: {
-        apiId: {
-          in: r.strengths,
-        },
-      },
-    })
     const result = await prisma.type.update({
       where: {
         apiId: r.apiId,
       },
       data: {
         weaknesses: {
-          connect: weaknesses.map(({ id }) => ({ id }))
+          connect: r.weaknesses.map(apiId => ({ apiId }))
         },
         strengths: {
-          connect: strengths.map(({ id }) => ({ id }))
+          connect: r.strengths.map(apiId => ({ apiId }))
         },
       },
     })
-    console.log(`Added relations to type with id ${result.id}. Weaknesses: ${weaknesses.length}  Strengths: ${strengths.length}`)
+    console.log(`Added relations to type with id ${result.id}. Weaknesses: ${r.weaknesses.length}  Strengths: ${r.strengths.length}`)
   }
 }

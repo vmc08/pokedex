@@ -1,60 +1,118 @@
 import axios from 'axios'
-import { PrismaClient, Ability } from "@prisma/client"
+import { PrismaClient, Pokemon, Ability, Type, Stat, StatValue } from "@prisma/client"
 
 import { IPage, IGenericApiResult } from 'prisma/types'
-import { getApiId } from 'prisma/utils/seederUtil'
+import { getApiId } from '../utils/seederUtil'
 
 const prisma = new PrismaClient()
 const DEFAULT_LIMIT = 20
 
-interface IApiAbility {
-  effect_entries: {
-    effect: string;
-    language: { name: 'en' | 'de' };
-    short_effect: string;
+interface IApiPokemon {
+  abilities: {
+    ability: IGenericApiResult;
+    is_hidden: boolean;
   }[]
-  flavor_text_entries: {
-    flavor_text: string;
-    language: { name: 'en' | 'de' };
+  types: {
+    type: IGenericApiResult;
+  }[]
+  stats: {
+    stat: IGenericApiResult;
+    base_stat: number;
+  }[]
+  sprites: {
+    back_default: string;
+    front_default: string;
+    other: {
+      dream_world: {
+        front_default: string;
+      };
+      "official-artwork": {
+        front_default: string;
+      };
+    }
+  }
+  height: number;
+  weight: number;
+}
+
+interface IResult extends Omit<Pokemon, 'id'> {
+  abilities: Array<Ability['apiId']>;
+  types: Array<Type['apiId']>;
+  stats: {
+    value: StatValue['value'];
+    stat: Stat['apiId'];
   }[]
 }
 
 export default async () => {
   let offset = 0
-  let results: Omit<Ability, 'id'>[] = []
+  let results: IResult[] = []
   let promises: Promise<void>[] = []
 
   do {
     const currentOffset = offset * DEFAULT_LIMIT
-    const { data } = await axios.get<IPage<IGenericApiResult>>(`https://pokeapi.co/api/v2/ability?offset=${currentOffset}&limit=${DEFAULT_LIMIT}`)
+    const { data } = await axios.get<IPage<IGenericApiResult>>(`https://pokeapi.co/api/v2/pokemon?offset=${currentOffset}&limit=${DEFAULT_LIMIT}`)
     const currentMaxRange = (currentOffset + DEFAULT_LIMIT) > data.count ? data.count : (currentOffset + DEFAULT_LIMIT)
 
     for (const r of data.results) {
-      const ar = await axios.get<IApiAbility>(r.url)
-      const shortEffect = ar.data.effect_entries.find(ee => ee.language.name === 'en')?.short_effect || ''
-      const flavorEntry = ar.data.flavor_text_entries.find(ee => ee.language.name === 'en')?.flavor_text || ''
+      const pr = await axios.get<IApiPokemon>(r.url)
+      const abilities = pr.data.abilities.map(a => getApiId(a.ability.url))
+      const types = pr.data.types.map(t => getApiId(t.type.url))
+      const stats = pr.data.stats.map(s => ({
+        stat: getApiId(s.stat.url),
+        value: s.base_stat,
+      }))
       results.push({
-        apiId: getApiId(r.url),
+        abilities,
+        types,
+        stats,
+        image: pr.data.sprites.other.dream_world.front_default,
         name: r.name,
-        effect: shortEffect || flavorEntry,
+        apiId: getApiId(r.url),
+        weight: pr.data.weight,
+        height: pr.data.height,
       })
-      console.log(`Fetching ability effect done: ${r.name}`)
+      console.log(`Fetching pokemon details done: ${r.name}`)
     }
 
-    console.log(`Fetching abilities done: ${currentOffset} - ${currentMaxRange}`)
+    console.log(`Fetching pokemons done: ${currentOffset} - ${currentMaxRange}`)
     if (data.next) offset++
     else break;
   } while (offset)
 
-  results.forEach(r => {
-    promises.push(
-      prisma.ability.create({
-        data: r,
-      }).then(r => {
-        console.log(`Record created for ability with id ${r.id}`)
+  for (const { abilities, types, stats, ...r } of results) {
+    const pr = await prisma.pokemon.create({
+      data: {
+        ...r,
+        abilities: {
+          connect: abilities.map(apiId => ({ apiId }))
+        },
+        types: {
+          connect: types.map(apiId => ({ apiId }))
+        },
+      },
+    })
+    console.log(`Record created for pokemon ${pr.name}`)
+
+    const statValuePromises = stats.map(s =>
+      prisma.statValue.create({
+        data: {
+          value: s.value,
+          stat: {
+            connect: { apiId: s.stat },
+          },
+          pokemon: {
+            connect: { id: pr.id },
+          },
+        },
+        include: {
+          stat: true,
+        }
+      }).then(svr => {
+        console.log(`${svr.stat.name}: ${svr.value}`)
       })
     )
-  })
 
-  await Promise.all(promises)
+    await Promise.all(statValuePromises)
+  }
 }

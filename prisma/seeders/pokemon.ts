@@ -66,7 +66,7 @@ export default async () => {
         abilities,
         types,
         stats,
-        image: pr.data.sprites.other.dream_world.front_default,
+        image: pr.data.sprites.other.dream_world.front_default || pr.data.sprites.other['official-artwork'].front_default,
         name: r.name,
         apiId: getApiId(r.url),
         weight: pr.data.weight,

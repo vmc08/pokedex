@@ -6,7 +6,7 @@ import {
 } from "@chakra-ui/react"
 import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 
-export default () => {
+export default function LoginPage () {
   const [showPw, setShowPw] = useState(false)
 
   return (

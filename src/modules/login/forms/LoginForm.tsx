@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Button, IconButton, Stack } from "@chakra-ui/react"
+import { useRouter } from "next/router"
+import { Button, IconButton, Stack, useToast } from "@chakra-ui/react"
 import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import { useForm, useFormState } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -14,22 +15,38 @@ export type TLoginFormValues = {
 }
 
 const LoginForm = () => {
+  const router = useRouter()
+  const toast = useToast()
   const [showPw, setShowPw] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   const { control, register, handleSubmit } = useForm<TLoginFormValues>({
     resolver: yupResolver(loginSchema),
   })
-  const { errors } = useFormState({ control })
+  const { errors, isSubmitting } = useFormState({ control })
 
   const onSubmitAction = async (formData: TLoginFormValues) => {
-    setLoading(true)
-    const result = await signIn("credentials", {
-      ...formData,
-      redirect: false,
-    })
-    console.log(result)
-    setLoading(false)
+    try {
+      const result = await signIn("credentials", {
+        ...formData,
+        redirect: false,
+        callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
+      })
+      if (result?.ok && result.url) {
+        router.push(result.url)
+      } else {
+        toast({
+          description: 'Invalid credentials.',
+          status: 'error',
+          position: 'top',
+        })
+      }
+    } catch (e) {
+      toast({
+        description: 'An unknown error has occurred!',
+        status: 'error',
+        position: 'top',
+      })
+    }
   }
 
   return (
@@ -41,13 +58,13 @@ const LoginForm = () => {
           placeholder="Email"
           size="lg"
           leftIcon={<EmailIcon color="gray.300" />}
-          isReadOnly={loading}
+          isReadOnly={isSubmitting}
           error={errors.email?.message}
           {...register("email")}
         />
         <AppInput
           id="password"
-          type="password"
+          type={showPw ? "text" : "password"}
           placeholder="Password"
           size="lg"
           leftIcon={<LockIcon color="gray.300" />}
@@ -59,12 +76,12 @@ const LoginForm = () => {
               onClick={() => setShowPw(prevState => !prevState)}
             />
           )}
-          isReadOnly={loading}
+          isReadOnly={isSubmitting}
           error={errors.password?.message}
           {...register("password")}
         />
         <Button
-          isLoading={loading}
+          isLoading={isSubmitting}
           loadingText="Authenticating"
           colorScheme="blue"
           size="lg"

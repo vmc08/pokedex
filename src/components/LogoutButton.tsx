@@ -1,10 +1,14 @@
 import { useRouter } from "next/router"
 import { Button, useToast } from "@chakra-ui/react"
-import { signOut } from "next-auth/client"
+import { signOut, useSession } from "next-auth/client"
 
 const LogoutButton = () => {
+  const [session, loading] = useSession()
   const router = useRouter()
   const toast = useToast()
+
+  if (loading || !session) return null
+
   return (
     <Button
       colorScheme="blue"

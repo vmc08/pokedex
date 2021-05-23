@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useRouter } from "next/router"
+import Router from "next/router"
 import { Button, IconButton, Stack, useToast } from "@chakra-ui/react"
 import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import { useForm, useFormState } from 'react-hook-form'
@@ -15,7 +15,6 @@ export type TLoginFormValues = {
 }
 
 const LoginForm = () => {
-  const router = useRouter()
   const toast = useToast()
   const [showPw, setShowPw] = useState(false)
 
@@ -32,7 +31,7 @@ const LoginForm = () => {
         callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
       })
       if (result?.ok && result.url) {
-        router.push(result.url)
+        Router.push(result.url)
       } else {
         toast({
           description: 'Invalid credentials.',

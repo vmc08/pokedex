@@ -15,5 +15,6 @@ const LoginPage: FC & TPageConfig = () => {
 }
 
 LoginPage.showBanner = false
+LoginPage.publicPage = true
 
 export default LoginPage

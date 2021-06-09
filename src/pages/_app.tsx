@@ -11,13 +11,13 @@ import theme from 'theme'
 const App: React.FC<AppProps> = ({ Component, pageProps }) => {
   const {
     showBanner = true,
-    publicPage = false,
+    isPublicPage: publicPage = false,
   } = Component as NextComponentType<NextPageContext, any, {}> & TPageConfig
   const { session, ...actualPageProps } = pageProps
   return (
     <Provider session={session}>
       <ChakraProvider theme={theme}>
-        <AuthGuard publicPage={publicPage}>
+        <AuthGuard isPublicPage={publicPage}>
           {showBanner && <LoginBanner />}
           <Component {...actualPageProps} />
         </AuthGuard>

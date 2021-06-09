@@ -1,52 +1,48 @@
-import { useState } from "react"
-import Router from "next/router"
-import { Button, IconButton, Stack, useToast } from "@chakra-ui/react"
-import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
-import { useForm, useFormState } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { signIn } from 'next-auth/client'
+import { useState } from "react";
+import Router from "next/router";
+import { Button, IconButton, Stack, useToast } from "@chakra-ui/react";
+import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { useForm, useFormState } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { signIn } from "next-auth/client";
 
-import AppInput from 'src/components/form/AppInput'
-import loginSchema from '../validations/loginSchema'
-
-export type TLoginFormValues = {
-  email: string;
-  password: string;
-}
+import AppInput from "src/components/form/AppInput";
+import loginSchema, { TLoginSchemaValues } from "../validations/loginSchema";
 
 const LoginForm = () => {
-  const toast = useToast()
-  const [showPw, setShowPw] = useState(false)
+  const toast = useToast();
+  const [showPw, setShowPw] = useState(false);
 
-  const { control, register, handleSubmit } = useForm<TLoginFormValues>({
+  const { register, handleSubmit, formState } = useForm<TLoginSchemaValues>({
     resolver: yupResolver(loginSchema),
-  })
-  const { errors, isSubmitting } = useFormState({ control })
+  });
 
-  const onSubmitAction = async (formData: TLoginFormValues) => {
+  const { errors, isSubmitting } = formState;
+
+  const onSubmitAction = async (formData: TLoginSchemaValues) => {
     try {
       const result = await signIn("credentials", {
         ...formData,
         redirect: false,
         callbackUrl: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
-      })
+      });
       if (result?.ok && result.url) {
-        Router.push(result.url)
+        Router.push(result.url);
       } else {
         toast({
-          description: 'Invalid credentials.',
-          status: 'error',
-          position: 'top',
-        })
+          description: "Invalid credentials.",
+          status: "error",
+          position: "top",
+        });
       }
     } catch (e) {
       toast({
-        description: 'An unknown error has occurred!',
-        status: 'error',
-        position: 'top',
-      })
+        description: "An unknown error has occurred!",
+        status: "error",
+        position: "top",
+      });
     }
-  }
+  };
 
   return (
     <form onSubmitCapture={handleSubmit(onSubmitAction)}>
@@ -67,14 +63,14 @@ const LoginForm = () => {
           placeholder="Password"
           size="lg"
           leftIcon={<LockIcon color="gray.300" />}
-          rightElement={(
+          rightElement={
             <IconButton
               variant="ghost"
               aria-label={showPw ? "Hide password" : "Show password"}
               icon={showPw ? <ViewIcon /> : <ViewOffIcon />}
-              onClick={() => setShowPw(prevState => !prevState)}
+              onClick={() => setShowPw((prevState) => !prevState)}
             />
-          )}
+          }
           isReadOnly={isSubmitting}
           error={errors.password?.message}
           {...register("password")}
@@ -90,7 +86,7 @@ const LoginForm = () => {
         </Button>
       </Stack>
     </form>
-  )
-}
+  );
+};
 
-export default LoginForm
+export default LoginForm;

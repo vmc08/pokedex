@@ -1,6 +1,11 @@
-import * as yup from 'yup'
+import { User } from "@prisma/client";
+import { object, string, SchemaOf, InferType } from "yup";
 
-export default yup.object().shape({
-  email: yup.string().email('Invalid email.').required('Email is required.'),
-  password: yup.string().required('Password is requried.')
-})
+const loginSchema: SchemaOf<Pick<User, "email" | "password">> = object().shape({
+  email: string().email("Invalid email.").required("Email is required."),
+  password: string().required("Password is requried."),
+});
+
+export type TLoginSchemaValues = InferType<typeof loginSchema>;
+
+export default loginSchema;
